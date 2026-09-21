@@ -1,4 +1,4 @@
-import { Sidebar } from '@/shared/ui/sidebar';
+import { Sidebar } from '@/shared/ui/sidebar/sidebar';
 import { UserMenu } from '@/features/auth';
 
 export default async function ChatLayout({
