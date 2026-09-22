@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import type { Movie } from '../types/movie.types';
+import type { Movie } from '../types/movie';
 
 interface MovieGridProps {
   movies: Movie[];

@@ -8,7 +8,7 @@ import type {
   Movie,
   MovieEmbeddingMatch,
   TmdbMovieDetails,
-} from '../types/movie.types';
+} from '../types/movie';
 import {
   EMBEDDING_MODEL,
   MATCH_COUNT,

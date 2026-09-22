@@ -6,7 +6,7 @@ import {
 import { NextResponse } from 'next/server';
 
 import { getUser } from '@/shared/lib/get-user';
-import { streamChatResponse } from '@/features/chat/services/chat-service';
+import { streamChatResponse } from '@/features/chat/services/chat';
 
 export const maxDuration = 30;
 

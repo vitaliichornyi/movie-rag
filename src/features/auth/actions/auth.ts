@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/shared/lib/supabase/server';
-import { magicLinkSchema, type MagicLinkInput } from '../schemas/auth-schema';
+import { magicLinkSchema, type MagicLinkInput } from '../schemas/auth';
 import type { ActionResponse } from '@/shared/types/action-response';
 
 const callbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;

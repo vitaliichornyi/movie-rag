@@ -11,7 +11,7 @@ import { GoogleIcon } from '@/shared/ui/google-icon';
 import { TextField } from '@/shared/ui/text-field';
 
 import { signInWithGoogle, sendMagicLink } from '../actions/auth';
-import { magicLinkSchema, type MagicLinkInput } from '../schemas/auth-schema';
+import { magicLinkSchema, type MagicLinkInput } from '../schemas/auth';
 
 export function AuthForm() {
   const router = useRouter();
