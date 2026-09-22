@@ -32,17 +32,17 @@ This file is read at the start of every session as the project's rule set — tr
 
 The project relies strictly on the technologies below. Refer to the official docs for syntax, features, and best practices — do not rely on legacy memory.
 
-| Technology | Purpose | Docs |
-| --- | --- | --- |
-| React | Core UI library | https://react.dev/reference/react |
-| Next.js | Routing, rendering, server-side functionality | https://nextjs.org/docs |
-| TypeScript | Static typing across the app | https://www.typescriptlang.org/docs/ |
-| TanStack Query | Client-side async state, fetching, caching | https://tanstack.com/query/latest/docs/framework/react/overview |
-| Tailwind CSS | Utility-first styling | https://tailwindcss.com/docs |
-| shadcn/ui | Accessible UI primitives | https://ui.shadcn.com/docs/installation |
-| Zod | Schema validation (API payloads, forms, env vars) | https://zod.dev/ |
-| React Hook Form | Form state & input handling | https://react-hook-form.com/docs |
-| Supabase | Database, auth, storage (BaaS) | https://supabase.com/docs |
+| Technology      | Purpose                                           | Docs                                                            |
+| --------------- | ------------------------------------------------- | --------------------------------------------------------------- |
+| React           | Core UI library                                   | https://react.dev/reference/react                               |
+| Next.js         | Routing, rendering, server-side functionality     | https://nextjs.org/docs                                         |
+| TypeScript      | Static typing across the app                      | https://www.typescriptlang.org/docs/                            |
+| TanStack Query  | Client-side async state, fetching, caching        | https://tanstack.com/query/latest/docs/framework/react/overview |
+| Tailwind CSS    | Utility-first styling                             | https://tailwindcss.com/docs                                    |
+| shadcn/ui       | Accessible UI primitives                          | https://ui.shadcn.com/docs/installation                         |
+| Zod             | Schema validation (API payloads, forms, env vars) | https://zod.dev/                                                |
+| React Hook Form | Form state & input handling                       | https://react-hook-form.com/docs                                |
+| Supabase        | Database, auth, storage (BaaS)                    | https://supabase.com/docs                                       |
 
 ### Version & Convention Verification
 
@@ -129,23 +129,23 @@ src/
     └── providers/                    # Global React context providers — see Providers & Root Layout
 ```
 
-| Folder | Responsibility |
-| --- | --- |
-| `features/<name>/actions/` | **Server Actions pattern only.** Thin `'use server'` wrappers built with `createSafeAction`, which owns Zod validation and the `getUser()` auth check. The action body only calls the matching `services/` function — no business logic or DB/Supabase calls live here (see Data Layer → Server Actions Pattern). |
-| `features/<name>/services/` | The only place business logic and DB/Supabase queries live for this feature. Knows nothing about Next.js — no `cookies()`, `revalidatePath()`, route handlers, etc. |
-| `features/<name>/schemas/` | Zod validation schemas owned by this feature. |
-| `features/<name>/types/` | Only types that genuinely can't be inferred from a schema (DB row shapes not covered by Zod, DTOs, service response payloads). |
-| `features/<name>/components/` | React components that know about this feature's entities — see Component Architecture. |
-| `features/<name>/hooks/` | Hooks specific to this feature. |
-| `features/<name>/lib/` | Pure algorithm/helper code tied to this feature's domain (e.g. generating a redirect slug for a node) — a feature-scoped mirror of `shared/lib/`. No DB/Supabase calls (that's `services/`) and no Next.js APIs (`cookies()`, `revalidatePath()`). If the same helper is later needed by 3+ features and is genuinely domain-agnostic, promote it to `shared/lib/` instead (see Cross-Feature Reuse → Rule of Three). |
-| `features/<name>/index.ts` | The feature's public API. Everything another feature or `app/` imports from this feature goes through here — see Cross-Feature Reuse below. |
-| `shared/ui/primitives/` | Raw shadcn/ui components — installed via CLI only, never hand-edited for feature-specific logic. |
-| `shared/ui/` (above `primitives/`) | Domain-agnostic wrappers over `primitives/` (`Avatar`, `ConfirmDialog`, `DataTable`) — know nothing about any entity — see Component Architecture. |
-| `shared/lib/` | Framework-agnostic utils, constants, and HOFs. Never DB queries or domain-specific auth/business logic — see Data Layer → Environment & Client Setup for the one named exception (`createSafeAction`). |
-| `shared/types/` | Global types with no feature owner (`Pagination<T>`, cross-cutting enums). |
-| `shared/schemas/` | Global Zod schemas genuinely reused across features (pagination, date range, address). |
-| `shared/hooks/` | Universal hooks with no domain knowledge (`useDebounce`, `useMediaQuery`). |
-| `shared/providers/` | One global provider per file — see Providers & Root Layout below. |
+| Folder                             | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `features/<name>/actions/`         | **Server Actions pattern only.** Thin `'use server'` wrappers built with `createSafeAction`, which owns Zod validation and the `getUser()` auth check. The action body only calls the matching `services/` function — no business logic or DB/Supabase calls live here (see Data Layer → Server Actions Pattern).                                                                                                     |
+| `features/<name>/services/`        | The only place business logic and DB/Supabase queries live for this feature. Knows nothing about Next.js — no `cookies()`, `revalidatePath()`, route handlers, etc.                                                                                                                                                                                                                                                   |
+| `features/<name>/schemas/`         | Zod validation schemas owned by this feature.                                                                                                                                                                                                                                                                                                                                                                         |
+| `features/<name>/types/`           | Only types that genuinely can't be inferred from a schema (DB row shapes not covered by Zod, DTOs, service response payloads).                                                                                                                                                                                                                                                                                        |
+| `features/<name>/components/`      | React components that know about this feature's entities — see Component Architecture.                                                                                                                                                                                                                                                                                                                                |
+| `features/<name>/hooks/`           | Hooks specific to this feature.                                                                                                                                                                                                                                                                                                                                                                                       |
+| `features/<name>/lib/`             | Pure algorithm/helper code tied to this feature's domain (e.g. generating a redirect slug for a node) — a feature-scoped mirror of `shared/lib/`. No DB/Supabase calls (that's `services/`) and no Next.js APIs (`cookies()`, `revalidatePath()`). If the same helper is later needed by 3+ features and is genuinely domain-agnostic, promote it to `shared/lib/` instead (see Cross-Feature Reuse → Rule of Three). |
+| `features/<name>/index.ts`         | The feature's public API. Everything another feature or `app/` imports from this feature goes through here — see Cross-Feature Reuse below.                                                                                                                                                                                                                                                                           |
+| `shared/ui/primitives/`            | Raw shadcn/ui components — installed via CLI only, never hand-edited for feature-specific logic.                                                                                                                                                                                                                                                                                                                      |
+| `shared/ui/` (above `primitives/`) | Domain-agnostic wrappers over `primitives/` (`Avatar`, `ConfirmDialog`, `DataTable`) — know nothing about any entity — see Component Architecture.                                                                                                                                                                                                                                                                    |
+| `shared/lib/`                      | Framework-agnostic utils, constants, and HOFs. Never DB queries or domain-specific auth/business logic — see Data Layer → Environment & Client Setup for the one named exception (`createSafeAction`).                                                                                                                                                                                                                |
+| `shared/types/`                    | Global types with no feature owner (`Pagination<T>`, cross-cutting enums).                                                                                                                                                                                                                                                                                                                                            |
+| `shared/schemas/`                  | Global Zod schemas genuinely reused across features (pagination, date range, address).                                                                                                                                                                                                                                                                                                                                |
+| `shared/hooks/`                    | Universal hooks with no domain knowledge (`useDebounce`, `useMediaQuery`).                                                                                                                                                                                                                                                                                                                                            |
+| `shared/providers/`                | One global provider per file — see Providers & Root Layout below.                                                                                                                                                                                                                                                                                                                                                     |
 
 **Small features don't need every subfolder.** If a feature is small (1–2 functions), skip subfolders that would be empty — start with flat files (`actions/user.ts`, `services/user.ts`) and only introduce a subfolder once a file genuinely needs to split (see File & Code Naming Conventions below).
 
@@ -160,17 +160,19 @@ A feature is a **cohesive business capability with a clear entry point** — not
 - **Change-frequency test.** Code that almost always changes together in the same commit is probably one feature. Code that lives an independent life is separate features, even when technically related.
 
 Examples:
+
 - `auth` (login/register/session) is its own feature.
 - `user-profile` is separate from `auth`, even though both concern the same user — different business purpose.
 - `node` + `edge` are one feature (`flow-editor`), never split — `edge` has no meaning on its own.
 - `payment` and `order` are usually separate features, linked via an interface/event, not a direct import.
-- `notification` is often its own infrastructure feature that others *use*, never the reverse.
+- `notification` is often its own infrastructure feature that others _use_, never the reverse.
 
 ### Cross-Feature Reuse
 
 When something from feature A is needed inside feature B:
 
 1. **Never duplicate.** Export it from `features/A/index.ts` and import it from there in B — never reach past the public API into `features/A/services/...` or any other internal path.
+
    ```ts
    // features/user/index.ts
    export { userSchema } from './schemas/user-schema';
@@ -178,6 +180,7 @@ When something from feature A is needed inside feature B:
    // features/post/schemas/post-schema.ts
    import { userSchema } from '@/features/user';
    ```
+
 2. **If only part of an entity is needed, don't import the whole thing.** Don't pull in a heavy shared schema/type wholesale for a couple of fields — define a narrow local variant instead:
    ```ts
    // don't import the whole userSchema if only id + name are needed
@@ -201,15 +204,15 @@ When something from feature A is needed inside feature B:
 - **`createSafeAction`** (see Data Layer → Server Actions Pattern) is shared infrastructure, not a feature entity, so it does **not** live inside any `features/<name>/` folder — it lives in `src/shared/lib/create-safe-action.ts` (see Data Layer → Environment & Client Setup for why `shared/lib/` and not a feature's `actions/`).
 - **File naming:** kebab-case only, everywhere. Pattern: `domain.ts` or `domain-submodule.ts`.
 
-| Location | File naming | Symbol naming | Example |
-| --- | --- | --- | --- |
-| `features/<name>/types/` | kebab-case (`user.types.ts`, `auth-credentials.ts`) | PascalCase types/interfaces | `export type DashboardStats = {...}`, `export interface UserProfile {...}` |
-| `features/<name>/services/` | kebab-case (`user-service.ts`, `links-management.ts`) | camelCase functions | `export async function loginUser() {...}` |
-| `features/<name>/actions/` | kebab-case (`update-profile.ts`, `delete-user.ts`) | camelCase functions | `export const updateProfile = createSafeAction(updateUserSchema, ...)` |
-| `features/<name>/schemas/` | kebab-case (`user-schema.ts`, `links.ts`) | camelCase, suffixed `Schema` | `export const loginSchema = z.object({...})` |
-| `features/<name>/lib/` / constants | kebab-case (`generate-slug.ts`) | UPPER_SNAKE_CASE (constants); camelCase functions | `export const SLUG_LENGTH = 8;`, `export function generateSlug() {...}` |
-| `shared/lib/` / constants | kebab-case (`auth-constants.ts`, `api-routes.ts`) | UPPER_SNAKE_CASE (constants); camelCase functions | `export const MAX_RETRY_ATTEMPTS = 3;`, `export function formatDate() {...}` |
-| `features/<name>/hooks/`, `shared/hooks/` | kebab-case, `use-` prefix (`use-auth.ts`) | camelCase, `use` prefix | `export function useAuth() {...}` |
+| Location                                  | File naming                                           | Symbol naming                                     | Example                                                                      |
+| ----------------------------------------- | ----------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `features/<name>/types/`                  | kebab-case (`user.types.ts`, `auth-credentials.ts`)   | PascalCase types/interfaces                       | `export type DashboardStats = {...}`, `export interface UserProfile {...}`   |
+| `features/<name>/services/`               | kebab-case (`user-service.ts`, `links-management.ts`) | camelCase functions                               | `export async function loginUser() {...}`                                    |
+| `features/<name>/actions/`                | kebab-case (`update-profile.ts`, `delete-user.ts`)    | camelCase functions                               | `export const updateProfile = createSafeAction(updateUserSchema, ...)`       |
+| `features/<name>/schemas/`                | kebab-case (`user-schema.ts`, `links.ts`)             | camelCase, suffixed `Schema`                      | `export const loginSchema = z.object({...})`                                 |
+| `features/<name>/lib/` / constants        | kebab-case (`generate-slug.ts`)                       | UPPER_SNAKE_CASE (constants); camelCase functions | `export const SLUG_LENGTH = 8;`, `export function generateSlug() {...}`      |
+| `shared/lib/` / constants                 | kebab-case (`auth-constants.ts`, `api-routes.ts`)     | UPPER_SNAKE_CASE (constants); camelCase functions | `export const MAX_RETRY_ATTEMPTS = 3;`, `export function formatDate() {...}` |
+| `features/<name>/hooks/`, `shared/hooks/` | kebab-case, `use-` prefix (`use-auth.ts`)             | camelCase, `use` prefix                           | `export function useAuth() {...}`                                            |
 
 ---
 
@@ -245,7 +248,7 @@ Access control is handled strictly in `src/proxy.ts` (Next.js Proxy — `middlew
 
 - `layout.tsx` (root and nested) is always a Server Component — no exception, ever. Layouts only wrap pages/route groups with shared structure; whatever interactivity is needed belongs in what they render, not in the layout itself.
 - `page.tsx` is a Server Component by default. It goes client directly only when the entire page is genuinely client-driven and there's nothing on it worth keeping server — no fetch to `await`, no static/instant part worth splitting out into its own piece. Introducing a server `page.tsx` that does nothing but render one client child, purely to keep the directive off `page.tsx` itself, is the kind of speculative splitting this file otherwise forbids (see Component Architecture → Don't Split Into Subcomponents Unless Actually Reused) — when there's truly nothing to gain from the split, mark `page.tsx` itself `'use client'`.
-- Whenever only *part* of a page needs client capabilities and something else on the page (a fetch, a static header, another region) genuinely benefits from staying server, extract the client-needing part — however large, up to nearly the whole visible content — into its own Client Component, and keep `page.tsx` Server. Size doesn't decide this; a real, isolable reason to keep something server does. Where that extracted piece lives (next to `page.tsx` in `app/`, or in `features/<name>/components/`) depends on whether it knows about a business entity — see Layering, Assembly & Styling Rules → "Pages are orchestrators" for the placement rule. The same server/client reasoning is why a data-driven page keeps `page.tsx` server and extracts its interactive part into a Client Component fed by props (see Fetching below).
+- Whenever only _part_ of a page needs client capabilities and something else on the page (a fetch, a static header, another region) genuinely benefits from staying server, extract the client-needing part — however large, up to nearly the whole visible content — into its own Client Component, and keep `page.tsx` Server. Size doesn't decide this; a real, isolable reason to keep something server does. Where that extracted piece lives (next to `page.tsx` in `app/`, or in `features/<name>/components/`) depends on whether it knows about a business entity — see Layering, Assembly & Styling Rules → "Pages are orchestrators" for the placement rule. The same server/client reasoning is why a data-driven page keeps `page.tsx` server and extracts its interactive part into a Client Component fed by props (see Fetching below).
 
 ### Fetching
 
@@ -263,7 +266,7 @@ Access control is handled strictly in `src/proxy.ts` (Next.js Proxy — `middlew
   - Nothing else worth showing before the fetch resolves (the page's entire content is the data-dependent part) → `loading.tsx` at that route segment. Next wraps the segment in Suspense automatically — the parent layout (sidebar, etc.) renders immediately, the page's own content shows the fallback as one unit, with no manual Suspense boundary and no manual `isLoading` state.
   - A genuinely independent static/instant part exists alongside a slower region (e.g. a header that renders instantly next to a data table that doesn't) → an explicit `<Suspense>` around just that region's `async` Server Component instead of — or in addition to — `loading.tsx`, since `loading.tsx` would blank the whole page's content, static parts included.
 - Whether to physically split a region into its own file/component still follows ordinary Component Architecture rules (reuse, render-isolation, a real need) — a fetch existing somewhere on the page is not itself a reason to fragment it into wrapper components. A single file with a single `loading.tsx` remains the right, simpler choice whenever the page has no genuinely independent regions worth streaming separately.
-- A loading state scoped to part of an *already-client* component's JSX (e.g. gating just a table's rows behind a client-side `isLoading` prop/state) stays an ordinary inline conditional — no new file, no Suspense boundary, since there's no server/client seam or streaming involved.
+- A loading state scoped to part of an _already-client_ component's JSX (e.g. gating just a table's rows behind a client-side `isLoading` prop/state) stays an ordinary inline conditional — no new file, no Suspense boundary, since there's no server/client seam or streaming involved.
 
 ### Components
 
@@ -324,7 +327,12 @@ features/
 
 1. **`shared/ui/primitives/`** — vendor code from the shadcn CLI (`npx shadcn add button`). Touch it carefully: re-running the CLI to add/update a component can overwrite hand edits. Point the CLI's output alias here in `components.json`:
    ```json
-   { "aliases": { "components": "@/shared/ui/primitives", "utils": "@/shared/lib/utils" } }
+   {
+     "aliases": {
+       "components": "@/shared/ui/primitives",
+       "utils": "@/shared/lib/utils"
+     }
+   }
    ```
 2. **`shared/ui/` (above `primitives/`)** — the actual design layer: combines multiple primitives, sets default props/styles/behavior. Still knows nothing about any business entity (`ConfirmDialog`, `DataTable`, `Avatar`). Usable from anywhere in the app.
 3. **`features/<name>/components/`** — components that know about this feature's entities (`UserCard`, `UserAvatar`). Consumed from that feature's own pages/components, or exported through the feature's `index.ts` for a second feature to use (see Directory Structure → Cross-Feature Reuse).
@@ -333,10 +341,10 @@ features/
 
 The criterion for `shared/ui/` vs. `features/<name>/components/` is never "used in multiple places" — it's **"does this component know about a specific business entity."**
 
-| | Knows about an entity | Doesn't know about an entity |
-| --- | --- | --- |
-| Used in 1 place | `features/<name>/components/` | `shared/ui/` (only if it's a genuinely universal pattern) |
-| Used in N places | Stays with the owning feature, exported via `index.ts` | `shared/ui/` |
+|                  | Knows about an entity                                  | Doesn't know about an entity                              |
+| ---------------- | ------------------------------------------------------ | --------------------------------------------------------- |
+| Used in 1 place  | `features/<name>/components/`                          | `shared/ui/` (only if it's a genuinely universal pattern) |
+| Used in N places | Stays with the owning feature, exported via `index.ts` | `shared/ui/`                                              |
 
 A common mistake is moving something into `shared/` only because it's needed in several places. A `UserAvatar` bound to the `User` type stays in `features/user/components/` even if it's used in five places. Only a genuinely agnostic `Avatar` (just `src` + `fallback`, no knowledge of `User`) belongs in `shared/ui/`:
 
@@ -357,8 +365,16 @@ The test applies at every level, including wrappers over wrappers: `ConfirmDialo
 // features/user/components/delete-user-dialog.tsx — knows about User, not shared
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog';
 
-export function DeleteUserDialog({ user, onDelete }: { user: User; onDelete: () => void }) {
-  return <ConfirmDialog title={`Delete user ${user.name}?`} onConfirm={onDelete} />;
+export function DeleteUserDialog({
+  user,
+  onDelete,
+}: {
+  user: User;
+  onDelete: () => void;
+}) {
+  return (
+    <ConfirmDialog title={`Delete user ${user.name}?`} onConfirm={onDelete} />
+  );
 }
 ```
 
@@ -429,6 +445,7 @@ Pick **exactly one** pattern for the entire application. Server Actions and API 
 
 - **No hybrid usage:** stick to the selected pattern across every feature.
 - **Single source of truth for business logic:** a feature's `services/` is where its business logic and DB/Supabase calls live, in either pattern — never in `actions/` or `route.ts`. Server Actions → client calls flow `features/<name>/actions/` (thin, `createSafeAction`-wrapped) → `features/<name>/services/`. API Routes → client requests flow `app/api/` (thin `route.ts`) → `features/<name>/services/`, orchestrated by TanStack Query on the client.
+- **Narrow exception — native HTTP streaming:** an endpoint that genuinely needs raw HTTP streaming (SSE-style, e.g. an AI SDK chat route using `streamText`) isn't reachable through a Server Action, so it's built as an `app/api/**/route.ts` even when the rest of the app is on the Server Actions pattern — this isn't "switching pattern," it's the same routing-constraint reasoning that already keeps `route.ts` in `app/` in the first place (see RESTful API Architecture → Design Principles). It still follows the API Routes pattern's internal shape for this one endpoint: thin `route.ts` → feature `services/`, own `getUser()` check (see Endpoint Security & Route Protection below — a page-level redirect in `proxy.ts` does not, by itself, protect the route handler). The feature's other `services/` functions keep returning `ActionResponse<T>` like the rest of the app; a service whose result is a stream (not a discrete value) is the one case exempt from that wrapper, since there's no discrete `{ data, error }` to hand back — return the stream/result object itself and let the thin `route.ts` turn it into the `Response`.
 
 _(Full pipeline details for each pattern are below, in Server Actions Pattern and API Routes + TanStack Query Pattern.)_
 
@@ -474,8 +491,8 @@ if (userError || !user)
   return { data: null, error: userError || 'Unauthorized' };
 ```
 
-  - **Server Actions pattern:** this call happens once, generically, inside `createSafeAction` (see Data Layer → Server Actions Pattern) — individual actions and services never call `getUser()` themselves.
-  - **API Routes pattern:** each route handler still calls it directly, per Endpoint Security & Route Protection below.
+- **Server Actions pattern:** this call happens once, generically, inside `createSafeAction` (see Data Layer → Server Actions Pattern) — individual actions and services never call `getUser()` themselves.
+- **API Routes pattern:** each route handler still calls it directly, per Endpoint Security & Route Protection below.
 - Never trust a `user_id` passed from the client — always override it with the authenticated `user.id` from the session.
 - Always chain `.eq('user_id', user.id)` on queries to enforce tenant/ownership isolation.
 - **Extract repeated ownership-check boilerplate — split on the second occurrence, never the first** (same rule as Component Architecture → Don't Split Into Subcomponents Unless Actually Reused). Ownership checks (e.g. "does this flow belong to this user") are resource-specific and live in the owning feature's `services/`, not in `createSafeAction` — validation and identity are already handled generically before a service ever runs. Write the first service's ownership-check sequence inline. Once a second service in the same feature's `services/` file needs the identical sequence, extract a shared private helper (not exported, not itself an action or route handler) that returns the authenticated context instead of copy-pasting the block again. Shape the helper's return like the existing `{ data, error }` convention — e.g. `{ context: { supabase, user, input }, error }` — so callers narrow it with the same `if (error || !context)` idiom already used for `getUser()`, no manual `!` assertions needed.
@@ -543,8 +560,11 @@ Client Component (Form / useActionState / useTransition)
 ```ts
 function createSafeAction<TSchema extends z.ZodType, TOutput>(
   schema: TSchema,
-  handler: (input: z.infer<TSchema>, user: User) => Promise<ActionResponse<TOutput>>,
-): (values: z.input<TSchema>) => Promise<ActionResponse<TOutput>>
+  handler: (
+    input: z.infer<TSchema>,
+    user: User,
+  ) => Promise<ActionResponse<TOutput>>,
+): (values: z.input<TSchema>) => Promise<ActionResponse<TOutput>>;
 ```
 
 - Runs `schema.safeParse(values)` first; on failure, returns `{ data: null, error: <first issue message> }` without calling `handler`.

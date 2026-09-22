@@ -1,3 +1,5 @@
+import { ChatWindow } from '@/features/chat';
+
 export default function ChatPage() {
-  return <div className="flex h-full">Chat</div>;
+  return <ChatWindow />;
 }

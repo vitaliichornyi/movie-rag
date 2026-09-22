@@ -8,10 +8,7 @@ import {
 } from 'react-hook-form';
 
 import { Field, FieldLabel, FieldError } from '@/shared/ui/primitives/field';
-import {
-  InputGroup,
-  InputGroupInput,
-} from '@/shared/ui/primitives/input-group';
+import { TextInput } from '@/shared/ui/text-input';
 
 interface TextFieldProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
@@ -35,15 +32,13 @@ export function TextField<TFieldValues extends FieldValues>({
       render={({ field, fieldState }) => (
         <Field data-invalid={!!fieldState.error}>
           <FieldLabel htmlFor={name}>{label}</FieldLabel>
-          <InputGroup>
-            <InputGroupInput
-              id={name}
-              type={type}
-              placeholder={placeholder}
-              aria-invalid={!!fieldState.error}
-              {...field}
-            />
-          </InputGroup>
+          <TextInput
+            id={name}
+            type={type}
+            placeholder={placeholder}
+            aria-invalid={!!fieldState.error}
+            {...field}
+          />
           <FieldError
             errors={fieldState.error ? [fieldState.error] : undefined}
           />
