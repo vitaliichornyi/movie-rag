@@ -4,7 +4,11 @@ import { openai } from '@ai-sdk/openai';
 import { createClient } from '@/shared/lib/supabase/server';
 import type { ActionResponse } from '@/shared/types/action-response';
 
-import type { Movie } from '../types/movie.types';
+import type {
+  Movie,
+  MovieEmbeddingMatch,
+  TmdbMovieDetails,
+} from '../types/movie.types';
 import {
   EMBEDDING_MODEL,
   MATCH_COUNT,
@@ -13,16 +17,6 @@ import {
   TMDB_POSTER_BASE_URL,
 } from '../lib/movie-search-config';
 
-interface MovieEmbeddingMatch {
-  tmdb_id: number;
-  similarity: number;
-}
-
-interface TmdbMovieDetails {
-  id: number;
-  poster_path: string | null;
-}
-
 async function fetchMoviePoster(tmdbId: number): Promise<Movie | null> {
   const response = await fetch(
     `${TMDB_API_BASE_URL}/movie/${tmdbId}?api_key=${process.env.TMDB_API_KEY}`,
@@ -30,7 +24,7 @@ async function fetchMoviePoster(tmdbId: number): Promise<Movie | null> {
   );
 
   if (!response.ok) {
-    return null;
+    throw new Error(`TMDB movie ${tmdbId} failed: ${response.status}`);
   }
 
   const details: TmdbMovieDetails = await response.json();
@@ -68,13 +62,33 @@ export async function searchMovies(
       return { data: null, error: matchError.message };
     }
 
-    const posters = await Promise.all(
+    const settled = await Promise.allSettled(
       (matches as MovieEmbeddingMatch[]).map((match) =>
         fetchMoviePoster(match.tmdb_id),
       ),
     );
 
-    const movies = posters.filter((movie): movie is Movie => movie !== null);
+    const movies = settled
+      .filter(
+        (result): result is PromiseFulfilledResult<Movie | null> =>
+          result.status === 'fulfilled',
+      )
+      .map((result) => result.value)
+      .filter((movie): movie is Movie => movie !== null);
+
+    const failures = settled
+      .filter(
+        (result): result is PromiseRejectedResult =>
+          result.status === 'rejected',
+      )
+      .map((result) => result.reason);
+
+    if (failures.length > 0) {
+      console.warn(
+        `${failures.length}/${settled.length} movie posters failed to load`,
+        failures,
+      );
+    }
 
     return { data: movies, error: null };
   } catch (error) {

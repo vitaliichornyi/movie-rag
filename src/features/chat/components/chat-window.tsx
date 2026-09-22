@@ -3,7 +3,8 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 
-import { MovieGrid, type Movie } from '@/features/movies';
+import { MovieGrid } from '@/features/movies/components/movie-grid';
+import type { Movie } from '@/features/movies/types/movie.types';
 import { ChatComposer } from './chat-composer';
 
 import { cn } from 'cn';

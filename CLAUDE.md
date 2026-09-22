@@ -105,11 +105,11 @@ src/
 │       ├── actions/                # Server Actions pattern only — thin, createSafeAction-wrapped
 │       │   └── update-profile.ts
 │       ├── services/                # Business logic — has ZERO knowledge of Next.js (no cookies(), revalidatePath(), etc.)
-│       │   └── user-service.ts
+│       │   └── user.ts
 │       ├── schemas/                 # Zod validation schemas owned by this feature
-│       │   └── user-schema.ts
+│       │   └── user.ts
 │       ├── types/                   # ONLY types that can't be inferred from a schema (DB entities, DTOs, etc.)
-│       │   └── user.types.ts
+│       │   └── user.ts
 │       ├── components/              # React components that know about this feature's entities
 │       │   ├── user-card.tsx
 │       │   └── user-form.tsx
@@ -175,9 +175,9 @@ When something from feature A is needed inside feature B:
 
    ```ts
    // features/user/index.ts
-   export { userSchema } from './schemas/user-schema';
+   export { userSchema } from './schemas/user';
 
-   // features/post/schemas/post-schema.ts
+   // features/post/schemas/post.ts
    import { userSchema } from '@/features/user';
    ```
 
@@ -202,17 +202,41 @@ When something from feature A is needed inside feature B:
 - **Core philosophy:** avoid micro-files. Group all closely related operations for a feature into one file by domain/module (e.g. `auth.ts` covers `login`, `logout`, `refreshToken`; `links.ts`, `links-analytics.ts`).
 - **Stay flat until a file genuinely needs to split.** Start with flat files directly inside each subfolder (`services/user.ts`, `actions/user.ts`) and split only once a file outgrows itself (~150–300 lines, or it's accumulated logically unrelated content) — never speculatively (see Component Architecture → Don't Split Into Subcomponents Unless Actually Reused).
 - **`createSafeAction`** (see Data Layer → Server Actions Pattern) is shared infrastructure, not a feature entity, so it does **not** live inside any `features/<name>/` folder — it lives in `src/shared/lib/create-safe-action.ts` (see Data Layer → Environment & Client Setup for why `shared/lib/` and not a feature's `actions/`).
-- **File naming:** kebab-case only, everywhere. Pattern: `domain.ts` or `domain-submodule.ts`.
+- **File naming:** kebab-case only, everywhere. Pattern: `domain.ts` or `domain-operation.ts` — never a suffix that just repeats the containing folder's role (see Eliminating Redundancy in File Names below).
 
-| Location                                  | File naming                                           | Symbol naming                                     | Example                                                                      |
-| ----------------------------------------- | ----------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `features/<name>/types/`                  | kebab-case (`user.types.ts`, `auth-credentials.ts`)   | PascalCase types/interfaces                       | `export type DashboardStats = {...}`, `export interface UserProfile {...}`   |
-| `features/<name>/services/`               | kebab-case (`user-service.ts`, `links-management.ts`) | camelCase functions                               | `export async function loginUser() {...}`                                    |
+| Location                                  | File naming                                     | Symbol naming                                     | Example                                                                      |
+| ----------------------------------------- | ------------------------------------------------ | ------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `features/<name>/types/`                  | kebab-case (`user.ts`, `auth-credentials.ts`)   | PascalCase types/interfaces                       | `export type DashboardStats = {...}`, `export interface UserProfile {...}`   |
+| `features/<name>/services/`               | kebab-case (`user.ts`, `links-management.ts`)   | camelCase functions                               | `export async function loginUser() {...}`                                    |
 | `features/<name>/actions/`                | kebab-case (`update-profile.ts`, `delete-user.ts`)    | camelCase functions                               | `export const updateProfile = createSafeAction(updateUserSchema, ...)`       |
-| `features/<name>/schemas/`                | kebab-case (`user-schema.ts`, `links.ts`)             | camelCase, suffixed `Schema`                      | `export const loginSchema = z.object({...})`                                 |
+| `features/<name>/schemas/`                | kebab-case (`user.ts`, `links.ts`)              | camelCase, suffixed `Schema`                      | `export const loginSchema = z.object({...})`                                 |
 | `features/<name>/lib/` / constants        | kebab-case (`generate-slug.ts`)                       | UPPER_SNAKE_CASE (constants); camelCase functions | `export const SLUG_LENGTH = 8;`, `export function generateSlug() {...}`      |
 | `shared/lib/` / constants                 | kebab-case (`auth-constants.ts`, `api-routes.ts`)     | UPPER_SNAKE_CASE (constants); camelCase functions | `export const MAX_RETRY_ATTEMPTS = 3;`, `export function formatDate() {...}` |
 | `features/<name>/hooks/`, `shared/hooks/` | kebab-case, `use-` prefix (`use-auth.ts`)             | camelCase, `use` prefix                           | `export function useAuth() {...}`                                            |
+
+### Eliminating Redundancy in File Names
+
+**Principle:** a file's name shouldn't repeat information its location already gives (path/folder). The same domain name recurring across different folders is not duplication — it's a useful link between parts of one functional module.
+
+- **Don't repeat the layer's role when the folder already names it.** Files inside `services/`, `schemas/`, `types/`, `actions/` are named only by domain/operation — no suffix that just repeats the folder itself.
+  - ✅ `features/movies/services/movie-search.ts` — ❌ `features/movies/services/movie-search-service.ts`
+  - ✅ `features/movies/schemas/movie-search.ts` — ❌ `features/movies/schemas/movie-search-schema.ts`
+  - ✅ `features/movies/types/movie.ts` — ❌ `features/movies/types/movie.types.ts`
+
+  The suffix adds no information the path doesn't already carry, and this holds from the very first file in the folder — don't wait until there are several files before dropping the suffix. **The dot as a layer separator (`.types.ts`, `.schema.ts`) is never used** — a dot in a filename is reserved for a genuinely separate artifact sharing the same base name (a test: `movie-search.test.ts`; a storybook file), never for repeating the folder's role.
+
+- **The same domain name recurring across folders is intentional, not a collision.** `services/movie-search.ts`, `schemas/movie-search.ts`, `types/movie.ts` naming the same domain across different technical layers is useful colocation-by-name — searching `movie-search` in the IDE surfaces every layer of that one piece of functionality at once. Don't deliberately vary these names for "uniqueness"; the match across layers is the desired pattern.
+
+- **Inside a shared, cross-feature folder (`lib/` and similar), a bare technical name isn't enough — qualify it by domain.** This applies to `lib/`-style folders that are reused across many features with the same technical role (e.g. a per-feature config file). A bare `config.ts` repeated in every feature's `lib/` is indistinguishable by name project-wide:
+  - ✅ `features/chat/lib/chat-config.ts`, `features/movies/lib/movie-search-config.ts`
+  - ❌ `features/chat/lib/config.ts` and `features/movies/lib/config.ts` — identical by name, unsearchable
+
+  Unlike `services/`/`schemas/`, where the folder itself is unique per feature and already gives that uniqueness, `lib/` is a shared, repeated folder shape across features — it doesn't confer uniqueness, so the filename has to.
+
+- **Multiple files of the same domain within one folder are told apart by operation, not by layer.** When a domain accumulates several files in the same folder, the differentiator names the operation, never the layer:
+  - ✅ `services/movie-search.ts` + `services/movie-details.ts` — ❌ `services/movie-search-service.ts` + `services/movie-details-service.ts`
+
+- **One consistent style project-wide.** Don't mix hyphenated, dotted, and bare naming within one feature — this is a deliberate project convention (not the only valid industry style; some codebases intentionally suffix by layer for IDE searchability), and this project applies it consistently, without falling back to layer suffixes as the structure grows.
 
 ---
 
@@ -480,6 +504,23 @@ These rules apply regardless of which pattern was selected above.
 - No `T` (defaults to `void`) → `{ error: string | null }` — this is the "simple action" shape (login, logout, register, etc.). Pass `T` (e.g. `ActionResponse<DashboardStats>`) → `{ data: T | null, error: string | null }` — this is the "data-returning" shape.
 - This `{ data, error }` shape is preserved end-to-end, from the database up to the UI (and across API responses in the API-routes pattern).
 - Never return raw primitives or bare nullable types from actions/services (e.g. `Promise<string | null>`, `Promise<boolean>`) — always wrap in `ActionResponse<T>` (Server Actions pattern) or `ServiceResponse<T>` (API Routes pattern), never both in the same project.
+- **Never write an explicit `Promise<void>` return-type annotation on a service/action function.** This bans the literal annotation, not a function that legitimately has nothing to hand back. A function with no useful return value is written with no return-type annotation at all — let TypeScript infer it — instead of spelling out `: Promise<void>` by hand:
+  ```ts
+  // ✅ correct — no explicit annotation
+  export async function signOut() {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    redirect('/auth');
+  }
+
+  // ❌ wrong — explicit Promise<void>, added for no reason
+  export async function signOut(): Promise<void> {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    redirect('/auth');
+  }
+  ```
+  This doesn't override the `ActionResponse<T>`/`ServiceResponse<T>` wrapping rule above for functions that do return `{ data, error }` — it only targets the reflex of typing out `Promise<void>` where nothing requires it.
 
 **Authentication & authorization:**
 
@@ -539,6 +580,62 @@ catch (error) {
 ```
 
 - **`'Unknown server error'` is the catch-all's last resort, never a first-class return value.** Use it only when the thrown value isn't an `Error` (or carries no usable message). Everywhere else — Supabase/Postgres errors, explicit early returns — surface the real message (`nodeError?.message`, `flowError?.message`, etc.) instead of writing a generic string by hand. A vague error is undebuggable for both the developer and (see Error Handling & Display) the support path back to the user.
+
+### Helpers vs. Services
+
+Two layers, different responsibilities:
+
+- **Service** (`features/<name>/services/`) — the system boundary: API calls, DB/Supabase queries, external systems. An error here is an **expected** event (network failure, a 404, an invalid response), so a service always returns its result as `ActionResponse<T>`/`ServiceResponse<T>` (see Standardized Response Format above).
+- **Helper** — internal logic: data transformation, validation, computation, formatting, mapping (e.g. `shared/lib/format-date.ts`, or a feature's `lib/generate-slug.ts`). A helper never wraps its result in `{ data, error }` — that shape exists only at the service boundary. Instead it either:
+  - **returns** the value directly, including a legitimate `null`/`undefined` when that's an expected outcome by the type (e.g. "item not found"); or
+  - **throws** when the case is genuinely exceptional — data violating its contract, a bug, an impossible state.
+
+A helper either does its job and returns a value (object, array, primitive — whatever the type is), or it can't, and then it throws explicitly, rather than silently returning `null`/an empty object with no explanation.
+
+**Scope — where I/O-performing helpers live:** any helper that touches the network or a database is, by definition, doing what `services/` owns (see Directory Structure → `features/<name>/services/` and `features/<name>/lib/`: the latter takes "no DB, no Next.js" explicitly). So a fetch-/DB-performing helper is never a file in `lib/` — it's a private, non-exported function colocated inside the `services/` file that calls it, which catches what it throws and turns it into `{ data, error }`. `lib/` (feature-scoped or `shared/`) stays reserved for the No-I/O categories below — pure helpers with zero knowledge of network/DB, like a date formatter or a slug generator.
+
+**Helper categories — I/O × loop:**
+
+Whether a helper does I/O, and whether it's called in a loop, decide how it should fail:
+
+- **No I/O, called once:** plain `return`; `throw` only for bugs/impossible states.
+  ```ts
+  function formatPrice(cents: number): string {
+    if (cents < 0) throw new Error(`Invalid price: ${cents}`);
+    return `$${(cents / 100).toFixed(2)}`;
+  }
+  ```
+- **No I/O, called in a loop:** still synchronous — nothing changes about the helper itself. A `throw` inside `.map`/`.forEach`/`for` naturally aborts the whole operation (fail-fast, JS's default behavior). If one item's failure shouldn't abort the loop, that's the **caller's** decision, not the helper's — the caller wraps each iteration in its own `try/catch` and collects results/errors manually. Same Fail-fast vs. Partial-success choice as the case below, just without `Promise.allSettled`.
+- **I/O, called once:** throws on failure; the calling service catches it and turns it into `{ data, error }`.
+  ```ts
+  async function fetchOneMovie(id: string): Promise<Movie> {
+    const res = await fetch(`/api/movies/${id}`);
+    if (!res.ok) throw new Error(`Movie ${id} failed: ${res.status}`);
+    return res.json();
+  }
+  ```
+- **I/O, called in a loop:** the most ambiguous case — an architectural choice made at the business-logic level, not the code level:
+  - **Fail-fast** — one failed item fails the whole operation (a `throw` naturally propagates and aborts the loop, reaching the service). Use when the result is meaningless without every item (e.g. all line items of one order).
+  - **Partial success** — collect what succeeded without letting one failure drop the whole result. Use when a partial result is still useful (e.g. 9 of 10 movies loaded is better than none).
+
+**Partial success — don't lose the error, even if it's invisible to the user:**
+
+- **Lightweight (`console.error` + `return null`)** — acceptable only as a temporary/prototyping shortcut. Logs the failure where it happens, returns only the successful values. Downside: failures aren't aggregated or accessible in code — no way to show the user "N items failed," send a metric, or test the failure path.
+- **Structured (`Promise.allSettled` + a separate `failures` array) — the project default.** The helper stays a plain throw-on-failure function; the caller uses `Promise.allSettled` and returns both the successful values and a `failures` array, leaving it to the calling service to decide what to do with the failures (log, surface to the user, send to monitoring):
+  ```ts
+  async function fetchAllMovies(ids: string[]) {
+    const settled = await Promise.allSettled(ids.map(fetchOneMovie));
+    const movies = settled
+      .filter((r): r is PromiseFulfilledResult<Movie> => r.status === 'fulfilled')
+      .map((r) => r.value);
+    const failures = settled
+      .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+      .map((r) => r.reason);
+    return { movies, failures };
+  }
+  ```
+  The owning service logs/reports `failures` and returns the successful data via the normal `ActionResponse<T>`/`ServiceResponse<T>` shape.
+- Move off the lightweight variant onto the structured one as soon as failures need to be shown to the user, measured, or tested — don't leave the lightweight version in place past prototyping.
 
 ### Server Actions Pattern
 
@@ -663,7 +760,17 @@ export type AuthInput = z.infer<typeof authSchema>;
 ### Domain Types vs. Built-in Auth Types
 
 - Use standard SDK types for built-in Supabase systems (e.g. import `User` directly from `@supabase/supabase-js`).
-- For custom application tables, don't rely on auto-generated database types — handcraft clean, dedicated interfaces inside the owning feature's `types/` (e.g. `features/links/types/links.types.ts`).
+- For custom application tables, don't rely on auto-generated database types — handcraft clean, dedicated interfaces inside the owning feature's `types/` (e.g. `features/links/types/links.ts`; see Directory Structure → Eliminating Redundancy in File Names for why no `.types.ts` suffix).
+
+### Type Placement: `types/` vs. Inline
+
+Where a type lives depends on whether it's reused **and** whether it's a "public contract" of the feature — not on reuse alone.
+
+- **Extract to `types/`** when the type either:
+  - is reused across multiple files within the feature (several services, components, hooks); or
+  - describes the feature's public contract — a DTO, an API response shape, a domain entity — even when only one place uses it today. This kind of type isn't an implementation detail; it describes the shape of data the feature operates on, so it belongs in `types/` regardless of reuse count.
+- **Keep it inline**, in the file that uses it, when the type is used only within a single function/file **and** is a purely technical implementation detail (e.g. the argument shape of one internal helper) — even if it looks hypothetically reusable.
+- **Heuristic, with the public-contract override:** "reused → `types/`, local and technical → inline next to the code" — but a type that's a contract/shape of data coming from the backend still goes to `types/` even when used in only one place; "publicness" outranks reuse count.
 
 ### Interface vs. Type
 
