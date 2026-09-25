@@ -1,5 +1,3 @@
-import 'server-only';
-
 import type { MovieSearchInput } from '../schemas/movie-search';
 import { MovieTagCategories } from '../schemas/movie-tags';
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/shared/lib/get-user';
-import { streamChatResponse } from '@/features/chat/services/chat';
+import { streamChatResponse } from '@/features/chat/server';
 
 import {
   type UIMessage,

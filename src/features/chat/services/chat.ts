@@ -15,11 +15,10 @@ import {
 
 import {
   queryClarificationInputSchema,
-  assessQuerySpecificity,
   EMPTY_MOVIE_TAG_CATEGORIES,
   movieSearchInputSchema,
-  searchMovies,
 } from '@/features/movies';
+import { assessQuerySpecificity, searchMovies } from '@/features/movies/server';
 
 export async function streamChatResponse(messages: UIMessage[]) {
   return streamText({

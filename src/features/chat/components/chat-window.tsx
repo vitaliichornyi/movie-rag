@@ -4,10 +4,12 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import type { UIMessage } from 'ai';
 
-import { MovieGrid } from '@/features/movies/components/movie-grid';
-import { TagChipPanel } from '@/features/movies/components/tag-chip-panel';
-import type { Movie } from '@/features/movies/types/movie';
-import type { QueryClarificationResult } from '@/features/movies/schemas/query-clarification';
+import {
+  MovieGrid,
+  TagChipPanel,
+  type Movie,
+  type QueryClarificationResult,
+} from '@/features/movies';
 import { ChatComposer } from './chat-composer';
 
 import { cn } from 'cn';
