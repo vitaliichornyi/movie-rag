@@ -20,5 +20,5 @@ Tag generation (only when "needsClarification" is true):
   - "aiDiscovery": 2-3 other high-value disambiguating tags that don't fit above.
 
 Formatting:
-- Concise 1-3 word tags, lowercased, in English.
+- Concise 1-3 word tags, lowercased, written in the same language as the user's movie request.
 - Never invent tags for categories you were told to leave empty when "needsClarification" is false.`;

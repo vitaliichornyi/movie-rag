@@ -15,6 +15,12 @@ assessMovieQuery tells you whether the request is specific enough:
 - If needsClarification is false, immediately call searchMovies with the
   original query and any tags gathered so far.
 
+The movie catalog and its tags are in English, even though you converse
+with the user and propose tags to them in their own language. Whenever you
+call searchMovies, translate the query and every tag argument into English
+first, regardless of what language the user's request or picked tags were
+in.
+
 When the user's next message reports which tags they picked (or asks to
 search/skip ahead), read the tags you previously proposed and what the user
 picked out of them from the conversation so far, then call assessMovieQuery
