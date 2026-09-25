@@ -70,7 +70,7 @@ export function ChatWindow() {
     <div className="flex flex-col gap-4 h-full w-full py-4">
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-2 w-full max-w-2xl mx-auto px-4">
-          {messages.map((message) => (
+          {messages.filter(hasVisibleContent).map((message) => (
             <div
               key={message.id}
               className={cn(
