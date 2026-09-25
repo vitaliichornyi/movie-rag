@@ -28,10 +28,20 @@ function hasVisibleContent(message: UIMessage): boolean {
   );
 }
 
+function hasNonEmptyText(message: UIMessage): boolean {
+  return message.parts.some(
+    (part) => part.type === 'text' && part.text.length > 0,
+  );
+}
+
 function getPendingClarificationTags(messages: UIMessage[]): string[] | null {
   const lastMessage = messages[messages.length - 1];
 
-  if (!lastMessage || lastMessage.role !== 'assistant') {
+  if (
+    !lastMessage ||
+    lastMessage.role !== 'assistant' ||
+    !hasNonEmptyText(lastMessage)
+  ) {
     return null;
   }
 
