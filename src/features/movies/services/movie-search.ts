@@ -1,26 +1,59 @@
+import 'server-only';
+
+import type { MovieSearchInput } from '../schemas/movie-search';
+import { MovieTagCategories } from '../schemas/movie-tags';
+
 import { embed } from 'ai';
 import { openai } from '@ai-sdk/openai';
 
+import {
+  EMBEDDING_MODEL,
+  MATCH_COUNT,
+  MATCH_THRESHOLD,
+  SUPABASE_RPC_TIMEOUT_MS,
+  TMDB_API_BASE_URL,
+  TMDB_FETCH_TIMEOUT_MS,
+  TMDB_POSTER_BASE_URL,
+} from '../lib/movie-search-config';
+
+import { MOVIE_TAG_LABELS } from '../lib/movie-tag-constants';
+
 import { createClient } from '@/shared/lib/supabase/server';
-import type { ActionResponse } from '@/shared/types/action-response';
 
 import type {
   Movie,
   MovieEmbeddingMatch,
   TmdbMovieDetails,
 } from '../types/movie';
-import {
-  EMBEDDING_MODEL,
-  MATCH_COUNT,
-  MATCH_THRESHOLD,
-  TMDB_API_BASE_URL,
-  TMDB_POSTER_BASE_URL,
-} from '../lib/movie-search-config';
+
+import type { ActionResponse } from '@/shared/types/action-response';
+
+export function buildQueryEmbeddingText(
+  query: string,
+  tags?: Partial<MovieTagCategories>,
+): string {
+  const sections = [query];
+
+  for (const key of Object.keys(
+    MOVIE_TAG_LABELS,
+  ) as (keyof MovieTagCategories)[]) {
+    const values = tags?.[key];
+
+    if (values && values.length > 0) {
+      sections.push(`${MOVIE_TAG_LABELS[key]}: ${values.join(', ')}`);
+    }
+  }
+
+  return sections.join('\n\n');
+}
 
 async function fetchMoviePoster(tmdbId: number): Promise<Movie | null> {
   const response = await fetch(
     `${TMDB_API_BASE_URL}/movie/${tmdbId}?api_key=${process.env.TMDB_API_KEY}`,
-    { next: { revalidate: 60 * 60 * 24 } },
+    {
+      next: { revalidate: 60 * 60 * 24 },
+      signal: AbortSignal.timeout(TMDB_FETCH_TIMEOUT_MS),
+    },
   );
 
   if (!response.ok) {
@@ -40,23 +73,22 @@ async function fetchMoviePoster(tmdbId: number): Promise<Movie | null> {
 }
 
 export async function searchMovies(
-  query: string,
+  input: MovieSearchInput,
 ): Promise<ActionResponse<Movie[]>> {
   try {
     const { embedding } = await embed({
       model: openai.embedding(EMBEDDING_MODEL),
-      value: query,
+      value: buildQueryEmbeddingText(input.query, input.tags),
     });
 
     const supabase = await createClient();
-    const { data: matches, error: matchError } = await supabase.rpc(
-      'match_movie_embeddings',
-      {
+    const { data: matches, error: matchError } = await supabase
+      .rpc('match_movie_embeddings', {
         query_embedding: embedding,
         match_count: MATCH_COUNT,
         match_threshold: MATCH_THRESHOLD,
-      },
-    );
+      })
+      .abortSignal(AbortSignal.timeout(SUPABASE_RPC_TIMEOUT_MS));
 
     if (matchError) {
       return { data: null, error: matchError.message };
